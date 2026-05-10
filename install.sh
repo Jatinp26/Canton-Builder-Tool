@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="canton-foundation/canton-devrel"
+REPO="Jatinp26/canton-devrel-tool"
 INSTALL_DIR="$HOME/.canton-devrel"
 BIN_DIR="$HOME/.local/bin"
 VERSION="0.1.0"
