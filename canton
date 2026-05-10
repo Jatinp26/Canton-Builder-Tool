@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CANTON_DEVREL_DIR="${CANTON_DEVREL_DIR:-$HOME/.canton-devrel}"
+VERSION="0.1.0"
+
+usage() {
+  cat <<EOF
+
+  canton — Canton Network Developer CLI  (v${VERSION})
+
+  USAGE
+    canton devrel <command> [args]
+
+  COMMANDS
+    start               Boot the full Canton LocalNet (validators, wallets, Keycloak, PQS)
+    stop                Stop all LocalNet containers (data preserved)
+    status              Show health and port reference for all services
+    deploy <file.dar>   Upload a pre-built DAR to App Provider + App User participants
+    logs [service]      Tail container logs (optionally filter to one service)
+    reset               Wipe all data and stop containers — full clean slate
+    version             Print version info
+
+  EXAMPLES
+    canton devrel start
+    canton devrel status
+    canton devrel deploy ./my-app/.daml/dist/my-app-0.0.1.dar
+    canton devrel logs splice
+    canton devrel reset
+
+  SERVICES FOR LOGS
+    canton              Canton participant node
+    splice              Splice validators + wallet UIs
+    postgres            PostgreSQL
+    keycloak            Keycloak OAuth2
+    json-api-app-provider
+    json-api-app-user
+
+  PORTS (after start)
+    App Provider JSON API  →  http://localhost:3975
+    App User JSON API      →  http://localhost:2975
+    App Provider Wallet    →  http://wallet.localhost:3000
+    App User Wallet        →  http://wallet.localhost:2000
+    Scan UI                →  http://scan.localhost:4000
+    Keycloak               →  http://keycloak.localhost:8082
+
+  Wallet login: app-user / abc123  |  app-provider / abc123
+
+EOF
+}
+
+if [[ "${1:-}" == "version" || "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
+  echo "canton devrel v${VERSION}"
+  exit 0
+fi
+
+SUBCOMMAND="${1:-}"
+DEVREL_COMMAND="${2:-}"
+
+if [[ "$SUBCOMMAND" != "devrel" ]]; then
+  echo ""
+  echo "  Unknown command: ${SUBCOMMAND}"
+  usage
+  exit 1
+fi
+
+case "$DEVREL_COMMAND" in
+  start)
+    exec "$CANTON_DEVREL_DIR/scripts/start.sh"
+    ;;
+  stop)
+    exec "$CANTON_DEVREL_DIR/scripts/stop.sh"
+    ;;
+  status)
+    exec "$CANTON_DEVREL_DIR/scripts/status.sh"
+    ;;
+  deploy)
+    shift 2
+    exec "$CANTON_DEVREL_DIR/scripts/deploy.sh" "$@"
+    ;;
+  logs)
+    shift 2
+    exec "$CANTON_DEVREL_DIR/scripts/logs.sh" "${@:-}"
+    ;;
+  reset)
+    exec "$CANTON_DEVREL_DIR/scripts/reset.sh"
+    ;;
+  version|--version|-v)
+    echo "canton devrel v${VERSION}"
+    ;;
+  ""|help|--help|-h)
+    usage
+    ;;
+  *)
+    echo ""
+    echo "  Unknown devrel command: $DEVREL_COMMAND"
+    usage
+    exit 1
+    ;;
+esac
