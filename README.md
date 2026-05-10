@@ -17,7 +17,7 @@ That's it. Three validators, a synchronizer, wallet UIs, Canton Coin, Keycloak, 
 **macOS / Linux** (WSL 2 on Windows):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/canton-foundation/canton-devrel/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Jatinp26/canton-devrel-tool/main/install.sh | bash
 ```
 
 Then reload your shell:
@@ -119,7 +119,7 @@ Keycloak token expired. Just re-run `canton devrel deploy` — it fetches a fres
 
 Re-run the installer to get the latest version:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/canton-foundation/canton-devrel/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Jatinp26/canton-devrel-tool/main/install.sh | bash
 ```
 
 ---
