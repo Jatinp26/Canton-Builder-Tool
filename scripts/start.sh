@@ -29,7 +29,8 @@ if [ "${DOCKER_MEMORY_GB}" -lt 7 ] 2>/dev/null; then
   print_warning "Services may crash. Go to Docker Desktop → Settings → Resources → Memory and set it to at least 8 GB."
   echo ""
   read -rp "  Continue anyway? [y/N] " confirm
-  [[ "${confirm,,}" == "y" ]] || { echo "Aborted."; exit 1; }
+  confirm_lower="$(echo "$confirm" | tr '[:upper:]' '[:lower:]')"
+  [ "$confirm_lower" = "y" ] || { echo "Aborted."; exit 1; }
 fi
 
 # Check /etc/hosts for *.localhost entries
@@ -49,7 +50,8 @@ if [ ${#MISSING_HOSTS[@]} -gt 0 ]; then
   echo "    echo '127.0.0.1  wallet.localhost scan.localhost keycloak.localhost' | sudo tee -a /etc/hosts"
   echo ""
   read -rp "  Fix it automatically now? [y/N] " fix_hosts
-  if [[ "${fix_hosts,,}" == "y" ]]; then
+  fix_hosts_lower="$(echo "$fix_hosts" | tr '[:upper:]' '[:lower:]')"
+  if [ "$fix_hosts_lower" = "y" ]; then
     echo "127.0.0.1  wallet.localhost scan.localhost keycloak.localhost" | sudo tee -a /etc/hosts > /dev/null
     print_ok "Added to /etc/hosts."
   fi

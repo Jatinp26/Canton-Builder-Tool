@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
+# Canton DevRel Installer
+# Usage: curl -fsSL https://raw.githubusercontent.com/canton-foundation/canton-devrel/main/install.sh | bash
 set -euo pipefail
 
-REPO="Jatinp26/canton-devrel-tool"
+REPO="canton-foundation/canton-devrel"
 INSTALL_DIR="$HOME/.canton-devrel"
 BIN_DIR="$HOME/.local/bin"
 VERSION="0.1.0"
+
+# ─── Colors ───────────────────────────────────────────────────────────────────
 BOLD='\033[1m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -16,7 +20,7 @@ print_banner() {
   echo ""
   echo -e "${CYAN}${BOLD}┌─────────────────────────────────────────┐${NC}"
   echo -e "${CYAN}${BOLD}│   Canton DevRel Installer  v${VERSION}        │${NC}"
-  echo -e "${CYAN}${BOLD}│   Canton Foundation DevRel Tool.        │${NC}"
+  echo -e "${CYAN}${BOLD}│   Canton Foundation Developer Relations  │${NC}"
   echo -e "${CYAN}${BOLD}└─────────────────────────────────────────┘${NC}"
   echo ""
 }
@@ -26,6 +30,8 @@ warn() { echo -e "${YELLOW}⚠${NC}  $*"; }
 err()  { echo -e "${RED}✗${NC}  $*"; }
 step() { echo -e "${BOLD}▶${NC}  $*"; }
 
+# ─── Platform check ───────────────────────────────────────────────────────────
+
 print_banner
 
 OS="$(uname -s)"
@@ -34,7 +40,7 @@ case "$OS" in
   Linux)  ok "Linux detected" ;;
   *)
     err "Unsupported OS: $OS"
-    echo "  canton devrel tool supports macOS and Linux only."
+    echo "  canton devrel supports macOS and Linux only."
     echo "  Windows: use WSL 2."
     exit 1
     ;;
@@ -51,6 +57,8 @@ case "$ARCH" in
 esac
 
 echo ""
+
+# ─── Dependency checks ────────────────────────────────────────────────────────
 
 step "Checking dependencies..."
 echo ""
@@ -82,17 +90,21 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
   exit 1
 fi
 
+# Check Docker is running
 if ! docker info &>/dev/null; then
   err "Docker is installed but not running. Start Docker Desktop and re-run."
   exit 1
 fi
 ok "Docker is running"
 
+# Check Docker Compose v2
 if ! docker compose version &>/dev/null; then
   err "Docker Compose v2 not found. Update Docker Desktop (it's included in recent versions)."
   exit 1
 fi
 ok "Docker Compose v2 found"
+
+# Warn about memory
 DOCKER_MEMORY_BYTES=$(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0)
 DOCKER_MEMORY_GB=$(( DOCKER_MEMORY_BYTES / 1024 / 1024 / 1024 ))
 if [ "$DOCKER_MEMORY_GB" -lt 7 ]; then
@@ -104,18 +116,23 @@ fi
 
 echo ""
 
+# ─── Download ─────────────────────────────────────────────────────────────────
+
 step "Installing canton devrel to $INSTALL_DIR..."
 echo ""
 
+# Remove existing installation if present
 if [ -d "$INSTALL_DIR" ]; then
   warn "Existing installation found at $INSTALL_DIR — upgrading."
   rm -rf "$INSTALL_DIR"
 fi
 
+# Clone the repo
 if command -v git &>/dev/null; then
   git clone --depth=1 --quiet \
     "https://github.com/${REPO}.git" \
     "$INSTALL_DIR" 2>/dev/null || {
+      # Fallback: download tarball if git clone fails
       warn "git clone failed, trying tarball download..."
       mkdir -p "$INSTALL_DIR"
       curl -fsSL "https://github.com/${REPO}/archive/refs/heads/main.tar.gz" | \
@@ -128,16 +145,24 @@ else
 fi
 
 ok "Downloaded to $INSTALL_DIR"
+
+# Make all scripts executable
 chmod +x "$INSTALL_DIR/canton"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 chmod +x "$INSTALL_DIR/scripts/lib/"*.sh 2>/dev/null || true
 chmod +x "$INSTALL_DIR/docker/postgres/"*.sh 2>/dev/null || true
 
+# ─── PATH setup ───────────────────────────────────────────────────────────────
+
 step "Setting up PATH..."
 echo ""
+
+# Create ~/.local/bin and symlink the canton binary
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/canton" "$BIN_DIR/canton"
 ok "Symlinked: $BIN_DIR/canton → $INSTALL_DIR/canton"
+
+# Detect shell and add to PATH if not already there
 SHELL_NAME="$(basename "$SHELL")"
 PATH_LINE="export PATH=\"\$HOME/.local/bin:\$PATH\""
 CANTON_ENV_LINE="export CANTON_DEVREL_DIR=\"$INSTALL_DIR\""
@@ -153,6 +178,7 @@ add_to_shell_rc() {
       ok "Added to $rc_file"
     else
       ok "$rc_file already has ~/.local/bin in PATH"
+      # Still add CANTON_DEVREL_DIR if missing
       if ! grep -q 'CANTON_DEVREL_DIR' "$rc_file" 2>/dev/null; then
         echo "$CANTON_ENV_LINE" >> "$rc_file"
       fi
@@ -181,6 +207,9 @@ case "$SHELL_NAME" in
 esac
 
 echo ""
+
+# ─── /etc/hosts check ─────────────────────────────────────────────────────────
+
 step "Checking /etc/hosts for *.localhost domains..."
 echo ""
 
@@ -195,7 +224,8 @@ if [ ${#HOSTS_NEEDED[@]} -gt 0 ]; then
   warn "Missing from /etc/hosts: ${HOSTS_NEEDED[*]}"
   echo ""
   read -rp "  Add them now? (requires sudo) [y/N] " add_hosts
-  if [[ "${add_hosts,,}" == "y" ]]; then
+  add_hosts_lower="$(echo "$add_hosts" | tr '[:upper:]' '[:lower:]')"
+  if [ "$add_hosts_lower" = "y" ]; then
     echo "127.0.0.1  wallet.localhost scan.localhost keycloak.localhost" | \
       sudo tee -a /etc/hosts > /dev/null
     ok "Added to /etc/hosts"
@@ -208,9 +238,12 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}${BOLD}┌────────────────────────────────────────────┐${NC}"
-echo -e "${GREEN}${BOLD}│ canton devrel tool installed successfully! │${NC}"
-echo -e "${GREEN}${BOLD}└────────────────────────────────────────────┘${NC}"
+
+# ─── Done ─────────────────────────────────────────────────────────────────────
+
+echo -e "${GREEN}${BOLD}┌─────────────────────────────────────────┐${NC}"
+echo -e "${GREEN}${BOLD}│   canton devrel installed successfully! │${NC}"
+echo -e "${GREEN}${BOLD}└─────────────────────────────────────────┘${NC}"
 echo ""
 echo "  Reload your shell, then run:"
 echo ""
