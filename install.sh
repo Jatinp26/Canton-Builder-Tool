@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Canton DevRel Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/canton-foundation/canton-devrel/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/Jatinp26/Canton-DevRel-Tool/main/install.sh | bash
 set -euo pipefail
 
-REPO="canton-foundation/canton-devrel"
+REPO="Jatinp26/Canton-DevRel-Tool"
 INSTALL_DIR="$HOME/.canton-devrel"
 BIN_DIR="$HOME/.local/bin"
 VERSION="0.1.0"
