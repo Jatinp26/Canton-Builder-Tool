@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # canton devrel deploy <path/to/your.dar>
-# Uploads a pre-built DAR file to App Provider and App User participants
+# Uploads a pre-built DAR to App Provider and App User participants
+# Uses shared-secret auth (default for official Splice LocalNet)
 set -euo pipefail
 
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -45,76 +46,62 @@ for port in 3903 2903; do
 done
 print_ok "Validators reachable"
 
-# ─── Get auth tokens ──────────────────────────────────────────────────────────
+# ─── Auth token ───────────────────────────────────────────────────────────────
+# The official Splice LocalNet uses shared-secret auth by default.
+# The shared secret is "unsafe" — the token IS the secret, passed as Bearer.
+# This is read from the bundle's common.env SPLICE_APP_UI_UNSAFE_SECRET variable.
 
-print_step "Getting admin tokens from Keycloak..."
+BUNDLE_COMMON_ENV="$LOCALNET_DIR/env/common.env"
+if [ -f "$BUNDLE_COMMON_ENV" ]; then
+  SHARED_SECRET=$(grep 'SPLICE_APP_UI_UNSAFE_SECRET' "$BUNDLE_COMMON_ENV" \
+    | sed 's/.*:-\(.*\)}/\1/' | tr -d '"' | tr -d "'" || echo "unsafe")
+else
+  SHARED_SECRET="unsafe"
+fi
 
-PROVIDER_TOKEN=$(get_admin_token "$PROVIDER_REALM" "$PROVIDER_CLIENT_ID" "$PROVIDER_CLIENT_SECRET") || {
-  print_error "Failed to get App Provider token. Is Keycloak running?"
-  exit 1
-}
-print_ok "App Provider token acquired"
+# The token is the shared secret itself — no JWT generation needed
+TOKEN="$SHARED_SECRET"
 
-USER_TOKEN=$(get_admin_token "$USER_REALM" "$USER_CLIENT_ID" "$USER_CLIENT_SECRET") || {
-  print_error "Failed to get App User token. Is Keycloak running?"
-  exit 1
-}
-print_ok "App User token acquired"
+print_step "Using shared-secret auth (token: ${TOKEN})"
 
 # ─── Upload to App Provider ───────────────────────────────────────────────────
 
 echo ""
 print_step "Uploading to App Provider participant (port 3975)..."
 
-PROVIDER_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-  "${PROVIDER_JSON_API}/v2/packages" \
-  -H "Authorization: Bearer $PROVIDER_TOKEN" \
-  -H "Content-Type: application/octet-stream" \
-  --data-binary "@${DAR_PATH}")
+upload_dar() {
+  local name="$1"
+  local port="$2"
 
-PROVIDER_HTTP_CODE=$(echo "$PROVIDER_RESPONSE" | tail -n1)
-PROVIDER_BODY=$(echo "$PROVIDER_RESPONSE" | head -n-1)
+  RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+    "http://localhost:${port}/v2/packages" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/octet-stream" \
+    --data-binary "@${DAR_PATH}")
 
-case "$PROVIDER_HTTP_CODE" in
-  200|204)
-    print_ok "Uploaded to App Provider" ;;
-  409)
-    print_ok "Already uploaded to App Provider (package already exists — that's fine)" ;;
-  401)
-    print_error "Auth failed on App Provider. Token may have expired. Try again."
-    exit 1 ;;
-  *)
-    print_error "Upload failed on App Provider (HTTP $PROVIDER_HTTP_CODE)"
-    echo "  Response: $PROVIDER_BODY"
-    exit 1 ;;
-esac
+  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+  BODY=$(echo "$RESPONSE" | head -n-1)
 
-# ─── Upload to App User ───────────────────────────────────────────────────────
+  case "$HTTP_CODE" in
+    200|204)
+      print_ok "Uploaded to $name" ;;
+    409)
+      print_ok "Already uploaded to $name (package already exists — that's fine)" ;;
+    401)
+      print_error "Auth failed on $name (HTTP 401)."
+      echo ""
+      echo "  The shared secret may differ from 'unsafe' in your bundle."
+      echo "  Check: cat ~/.canton-devrel/bundle/splice-node/docker-compose/localnet/env/common.env | grep UNSAFE"
+      exit 1 ;;
+    *)
+      print_error "Upload failed on $name (HTTP $HTTP_CODE)"
+      echo "  Response: $BODY"
+      exit 1 ;;
+  esac
+}
 
-print_step "Uploading to App User participant (port 2975)..."
-
-USER_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-  "${USER_JSON_API}/v2/packages" \
-  -H "Authorization: Bearer $USER_TOKEN" \
-  -H "Content-Type: application/octet-stream" \
-  --data-binary "@${DAR_PATH}")
-
-USER_HTTP_CODE=$(echo "$USER_RESPONSE" | tail -n1)
-USER_BODY=$(echo "$USER_RESPONSE" | head -n-1)
-
-case "$USER_HTTP_CODE" in
-  200|204)
-    print_ok "Uploaded to App User" ;;
-  409)
-    print_ok "Already uploaded to App User (package already exists — that's fine)" ;;
-  401)
-    print_error "Auth failed on App User. Token may have expired. Try again."
-    exit 1 ;;
-  *)
-    print_error "Upload failed on App User (HTTP $USER_HTTP_CODE)"
-    echo "  Response: $USER_BODY"
-    exit 1 ;;
-esac
+upload_dar "App Provider" 3975
+upload_dar "App User"     2975
 
 # ─── Print package ID ─────────────────────────────────────────────────────────
 
@@ -129,20 +116,21 @@ if command -v dpm &>/dev/null; then
     echo ""
     print_ok "Package ID: $PACKAGE_ID"
     echo ""
-    echo "  Use this in your API calls:"
-    echo "    Template ID format: ${PACKAGE_ID}:<ModuleName>:<TemplateName>"
+    echo "  Template ID format for API calls:"
+    echo "    ${PACKAGE_ID}:<ModuleName>:<TemplateName>"
   fi
 else
-  print_warning "dpm not found — skipping package ID resolution."
-  echo "  Install dpm to get your package ID automatically."
+  print_warning "dpm not found — install dpm to get your package ID automatically."
 fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────────
 
 echo ""
-echo -e "${GREEN}${BOLD}  ✓ DAR deployed successfully!${NC}"
+echo -e "${GREEN}${BOLD}  ✓ DAR deployed successfully to LocalNet!${NC}"
 echo ""
-echo "  Your contracts are live on LocalNet."
-echo "  Wallet:  http://wallet.localhost:3000  (app-provider / abc123)"
-echo "  API:     http://localhost:3975  (App Provider JSON Ledger API)"
+echo "  App Provider JSON API:  http://localhost:3975"
+echo "  App User JSON API:      http://localhost:2975"
+echo "  App Provider Wallet:    http://wallet.localhost:3000"
+echo ""
+echo "  Auth token for API calls: Bearer $TOKEN"
 echo ""

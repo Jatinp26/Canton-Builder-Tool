@@ -77,8 +77,6 @@ On `canton devrel start`, the tool:
 
 Subsequent runs skip steps 1 and 2 entirely and boot in ~30 seconds.
 
----
-
 ## Deploying Your DAR
 
 Build your Daml project with `dpm build`, then:
@@ -89,8 +87,6 @@ canton devrel deploy ./your-project/.daml/dist/your-project-0.0.1.dar
 
 Uploads your DAR to both the App Provider and App User participants, retrieves your package ID, and prints the template ID format for API calls.
 
----
-
 ## What It Is / Isn't
 
 **Is:** A CLI wrapper around the official [Splice LocalNet](https://docs.sync.global/app_dev/testing/localnet.html) — the same Docker Compose configuration that Digital Asset ships with every Splice release, invoked with the exact commands from the official docs. No custom compose files, no approximations.
@@ -99,12 +95,10 @@ Uploads your DAR to both the App Provider and App User participants, retrieves y
 
 **Not for production.** LocalNet is a development environment. Admin ports are exposed for developer convenience.
 
----
-
 ## Troubleshooting
 
 **First run is slow**
-Normal — the Splice bundle (~500MB) and Docker images (~3-5GB) download on first run. Everything is cached after that.
+Normal, the Splice bundle (~500MB) and Docker images (~3-5GB) download on first run. Everything is cached after that.
 
 **Containers crash on startup**
 Docker memory. Go to Docker Desktop → Settings → Resources → Memory → set to 8 GB minimum.
