@@ -60,14 +60,40 @@ if [ ! -f "$LOCALNET_COMPOSE" ]; then
   echo ""
 
   mkdir -p "$BUNDLE_EXTRACT_DIR"
-  TARBALL_URL="https://github.com/hyperledger-labs/splice/releases/download/v${IMAGE_TAG}/${IMAGE_TAG}_splice-node.tar.gz"
+
+  # Official release URL — digital-asset/decentralized-canton-sync
+  TARBALL_URLS=(
+    "https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${IMAGE_TAG}/${IMAGE_TAG}_splice-node.tar.gz"
+  )
   TARBALL_PATH="$BUNDLE_EXTRACT_DIR/${IMAGE_TAG}_splice-node.tar.gz"
 
-  curl -L --progress-bar "$TARBALL_URL" -o "$TARBALL_PATH" || {
-    print_error "Download failed. Check your internet connection and try again."
-    print_error "URL: $TARBALL_URL"
+  DOWNLOADED=0
+  for TARBALL_URL in "${TARBALL_URLS[@]}"; do
+    echo "  Trying: $TARBALL_URL"
+    curl -fsSL --location --progress-bar "$TARBALL_URL" -o "$TARBALL_PATH" 2>/dev/null && {
+      # Verify it is actually a gzip file, not an HTML error page
+      if file "$TARBALL_PATH" 2>/dev/null | grep -q "gzip\|tar"; then
+        DOWNLOADED=1
+        break
+      else
+        print_warning "Downloaded file is not a valid tarball — trying next URL..."
+        rm -f "$TARBALL_PATH"
+      fi
+    }
+  done
+
+  if [ $DOWNLOADED -eq 0 ]; then
+    print_error "Could not download the Splice LocalNet bundle."
+    echo ""
+    echo "  Download it manually from:"
+    echo "    https://github.com/digital-asset/decentralized-canton-sync/releases/tag/v${IMAGE_TAG}"
+    echo ""
+    echo "  Then place the file at:"
+    echo "    $TARBALL_PATH"
+    echo ""
+    echo "  And re-run: canton devrel start"
     exit 1
-  }
+  fi
 
   print_step "Extracting bundle..."
   tar -xzf "$TARBALL_PATH" -C "$BUNDLE_EXTRACT_DIR"
