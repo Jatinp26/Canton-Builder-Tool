@@ -7,7 +7,7 @@ source "$DEVREL_DIR/scripts/lib/common.sh"
 
 # ─── Preflight checks ─────────────────────────────────────────────────────────
 
-print_header "Canton DevRel — Starting LocalNet"
+print_header "Canton DevRel is Starting LocalNet"
 
 # Check Docker is running
 if ! docker info &>/dev/null; then

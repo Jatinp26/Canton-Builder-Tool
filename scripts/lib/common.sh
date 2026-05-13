@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# canton-devrel: shared helpers
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -33,7 +35,11 @@ print_error() {
 }
 
 # Resolve compose project dir
-DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# BASH_SOURCE[0] = scripts/lib/common.sh → ../.. = repo root
+# Only set if not already defined by the calling script
+if [ -z "${DEVREL_DIR:-}" ]; then
+  DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
 COMPOSE_CMD=(docker compose
   --project-directory "$DEVREL_DIR/docker"
   --env-file "$DEVREL_DIR/.env"
