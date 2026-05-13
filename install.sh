@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/canton-foundation/canton-devrel/main/install.sh | bash
 set -euo pipefail
 
-REPO=""
+REPO="Jatinp26/Canton-DevRel-Tool"
 INSTALL_DIR="$HOME/.canton-devrel"
 BIN_DIR="$HOME/.local/bin"
 VERSION="0.1.0"
@@ -145,6 +145,14 @@ else
 fi
 
 ok "Downloaded to $INSTALL_DIR"
+
+# Set up .env from .env.example if not already present
+if [ ! -f "$INSTALL_DIR/.env" ]; then
+  cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+  ok "Created .env from .env.example"
+else
+  ok ".env already exists — skipping (edit $INSTALL_DIR/.env to change settings)"
+fi
 
 # Make all scripts executable
 chmod +x "$INSTALL_DIR/canton"
