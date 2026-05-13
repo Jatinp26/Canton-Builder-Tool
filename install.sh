@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Canton DevRel Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/Jatinp26/Canton-DevRel-Tool/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/canton-foundation/canton-devrel/main/install.sh | bash
 set -euo pipefail
 
-REPO="Jatinp26/Canton-DevRel-Tool"
+REPO=""
 INSTALL_DIR="$HOME/.canton-devrel"
 BIN_DIR="$HOME/.local/bin"
 VERSION="0.1.0"
@@ -150,7 +150,6 @@ ok "Downloaded to $INSTALL_DIR"
 chmod +x "$INSTALL_DIR/canton"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 chmod +x "$INSTALL_DIR/scripts/lib/"*.sh 2>/dev/null || true
-chmod +x "$INSTALL_DIR/docker/postgres/"*.sh 2>/dev/null || true
 
 # ─── PATH setup ───────────────────────────────────────────────────────────────
 

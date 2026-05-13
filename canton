@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
+# canton — Canton Network Developer CLI
+# Built by Canton Foundation Developer Relations
+# https://github.com/canton-foundation/canton-devrel
 set -euo pipefail
 
 CANTON_DEVREL_DIR="${CANTON_DEVREL_DIR:-$HOME/.canton-devrel}"
 VERSION="0.1.0"
+
+# ─── Help ─────────────────────────────────────────────────────────────────────
 
 usage() {
   cat <<EOF
@@ -49,10 +54,14 @@ usage() {
 EOF
 }
 
+# ─── Version ──────────────────────────────────────────────────────────────────
+
 if [[ "${1:-}" == "version" || "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
   echo "canton devrel v${VERSION}"
   exit 0
 fi
+
+# ─── Route subcommands ────────────────────────────────────────────────────────
 
 SUBCOMMAND="${1:-}"
 DEVREL_COMMAND="${2:-}"

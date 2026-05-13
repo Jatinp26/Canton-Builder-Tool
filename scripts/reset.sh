@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
-# canton devrel reset — wipes all containers, volumes, data. Full clean slate.
+# canton devrel reset — wipe all containers AND volumes. Full clean slate.
 set -euo pipefail
 
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
 
 print_header "Canton DevRel — Full Reset"
-
 print_warning "This will DELETE all LocalNet data:"
 echo "  • All ledger state (contracts, transactions)"
 echo "  • All party registrations"
 echo "  • All Canton Coin balances"
 echo "  • All uploaded DARs"
-echo "  • All PostgreSQL data"
+echo "  • All PostgreSQL volumes"
 echo ""
 read -rp "  Are you sure? Type 'yes' to confirm: " confirm
 
@@ -22,16 +21,18 @@ if [ "$confirm" != "yes" ]; then
 fi
 
 echo ""
-print_step "Stopping containers..."
-"${COMPOSE_CMD[@]}" down --remove-orphans 2>/dev/null || true
+print_step "Stopping containers and removing volumes..."
 
-print_step "Removing volumes..."
-"${COMPOSE_CMD[@]}" down -v 2>/dev/null || true
-
-print_step "Pruning dangling images (optional)..."
-docker image prune -f &>/dev/null || true
+# Official stop with -v removes volumes — this is the full reset
+docker compose \
+  --env-file "$LOCALNET_DIR/compose.env" \
+  --env-file "$LOCALNET_DIR/env/common.env" \
+  -f "$LOCALNET_DIR/compose.yaml" \
+  -f "$LOCALNET_DIR/resource-constraints.yaml" \
+  --profile sv --profile app-provider --profile app-user \
+  down -v 2>/dev/null || true
 
 echo ""
-print_ok "Reset complete. LocalNet data has been wiped."
-echo "  Start fresh with: canton devrel start"
+print_ok "Reset complete. All data wiped."
+echo "  Start fresh: canton devrel start"
 echo ""
