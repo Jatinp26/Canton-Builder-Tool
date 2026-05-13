@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
-# canton devrel deploy <path/to/your.dar>
-# Uploads a pre-built DAR to App Provider and App User participants
 set -euo pipefail
-
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-
-# ─── Args ─────────────────────────────────────────────────────────────────────
 
 if [ $# -lt 1 ]; then
   echo ""
@@ -17,9 +12,7 @@ if [ $# -lt 1 ]; then
   echo ""
   exit 1
 fi
-
 DAR_PATH="$1"
-
 if [ ! -f "$DAR_PATH" ]; then
   print_error "DAR file not found: $DAR_PATH"
   exit 1
@@ -27,12 +20,9 @@ fi
 
 DAR_FILENAME=$(basename "$DAR_PATH")
 DAR_SIZE=$(du -sh "$DAR_PATH" | cut -f1)
-
 print_header "Canton DevRel — Deploying DAR"
 echo "  File: $DAR_FILENAME ($DAR_SIZE)"
 echo ""
-
-# ─── Check validators are up ──────────────────────────────────────────────────
 
 print_step "Checking validators are reachable..."
 for port in 3903 2903; do
@@ -44,11 +34,6 @@ for port in 3903 2903; do
 done
 print_ok "Validators reachable"
 
-# ─── Generate JWT ─────────────────────────────────────────────────────────────
-# The official Splice LocalNet uses HS256-signed JWTs.
-# Secret: SPLICE_APP_UI_UNSAFE_SECRET (default: "unsafe")
-# Audience: from AUTH_APP_PROVIDER_AUDIENCE env in the splice container
-
 BUNDLE_COMMON_ENV="$LOCALNET_DIR/env/common.env"
 SECRET="unsafe"
 if [ -f "$BUNDLE_COMMON_ENV" ]; then
@@ -57,48 +42,34 @@ if [ -f "$BUNDLE_COMMON_ENV" ]; then
   [ -n "$PARSED" ] && SECRET="$PARSED"
 fi
 
-# Base64url encode — no padding, URL-safe chars
 b64url() {
   printf '%s' "$1" | base64 | tr '+/' '-_' | tr -d '=' | tr -d '\n'
 }
-
 make_jwt() {
   local user="$1"
   local audience="$2"
   local exp
-  exp=$(( $(date +%s) + 86400 ))  # 24 hours
-
+  exp=$(( $(date +%s) + 86400 ))  
   local header
   header=$(b64url '{"alg":"HS256","typ":"JWT"}')
-
   local payload
   payload=$(b64url "{\"sub\":\"${user}\",\"aud\":\"${audience}\",\"exp\":${exp}}")
-
   local signing_input="${header}.${payload}"
   local sig
   sig=$(printf '%s' "$signing_input" | openssl dgst -sha256 -hmac "$SECRET" -binary | \
     base64 | tr '+/' '-_' | tr -d '=' | tr -d '\n')
-
   printf '%s' "${signing_input}.${sig}"
 }
-
 print_step "Generating JWT tokens (HS256, secret: ${SECRET})..."
-
 PROVIDER_TOKEN=$(make_jwt "ledger-api-user" "https://canton.network.global")
 USER_TOKEN=$(make_jwt "ledger-api-user" "https://canton.network.global")
-
-print_ok "Tokens generated"
-
-# ─── Upload DAR ───────────────────────────────────────────────────────────────
-
+print_ok "Yayy! Tokens generated"
 upload_dar() {
   local name="$1"
   local port="$2"
   local token="$3"
-
   echo ""
   print_step "Uploading to ${name} (port ${port})..."
-
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
     "http://localhost:${port}/v2/packages" \
     -H "Authorization: Bearer ${token}" \
@@ -119,11 +90,8 @@ upload_dar() {
       exit 1 ;;
   esac
 }
-
 upload_dar "App Provider" 3975 "$PROVIDER_TOKEN"
 upload_dar "App User"     2975 "$USER_TOKEN"
-
-# ─── Package ID ───────────────────────────────────────────────────────────────
 
 echo ""
 print_step "Resolving package ID..."
@@ -147,13 +115,11 @@ if command -v dpm &>/dev/null; then
     echo "      -d '{...}'"
   fi
 else
-  print_warning "dpm not found — install dpm to get your package ID automatically."
+  print_warning "dpm not found, install dpm to get your package ID automatically."
 fi
 
-# ─── Done ─────────────────────────────────────────────────────────────────────
-
 echo ""
-echo -e "${GREEN}${BOLD}  ✓ DAR deployed successfully to LocalNet!${NC}"
+echo -e "${GREEN}${BOLD} DAR deployed successfully to LocalNet!${NC}"
 echo ""
 echo "  Your token for API calls (valid 24h):"
 echo "    $PROVIDER_TOKEN"

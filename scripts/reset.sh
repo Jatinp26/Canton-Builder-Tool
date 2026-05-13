@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# canton devrel reset — wipe all containers AND volumes. Full clean slate.
-set -euo pipefail
 
+set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-
 print_header "Canton DevRel — Full Reset"
 print_warning "This will DELETE all LocalNet data:"
 echo "  • All ledger state (contracts, transactions)"
@@ -22,8 +20,6 @@ fi
 
 echo ""
 print_step "Stopping containers and removing volumes..."
-
-# Official stop with -v removes volumes — this is the full reset
 docker compose \
   --env-file "$LOCALNET_DIR/compose.env" \
   --env-file "$LOCALNET_DIR/env/common.env" \

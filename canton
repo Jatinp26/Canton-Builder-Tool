@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
-# canton — Canton Network Developer CLI
-# Built by Canton Foundation Developer Relations
-# https://github.com/canton-foundation/canton-devrel
-set -euo pipefail
 
+set -euo pipefail
 CANTON_DEVREL_DIR="${CANTON_DEVREL_DIR:-$HOME/.canton-devrel}"
 VERSION="0.1.0"
 
-# ─── Help ─────────────────────────────────────────────────────────────────────
-
 usage() {
   cat <<EOF
-
-  canton — Canton Network Developer CLI  (v${VERSION})
+  Canton Network DevRel Tool CLI  (v${VERSION})
 
   USAGE
     canton devrel <command> [args]
@@ -21,9 +15,9 @@ usage() {
     start               Boot the full Canton LocalNet (validators, wallets, Keycloak, PQS)
     stop                Stop all LocalNet containers (data preserved)
     status              Show health and port reference for all services
-    deploy <file.dar>   Upload a pre-built DAR to App Provider + App User participants
+    deploy <file.dar>   Upload a prebuilt DAR to App Provider + App User participants
     logs [service]      Tail container logs (optionally filter to one service)
-    reset               Wipe all data and stop containers — full clean slate
+    reset               Wipe all data and stop containers, full clean slate
     version             Print version info
 
   EXAMPLES
@@ -54,18 +48,13 @@ usage() {
 EOF
 }
 
-# ─── Version ──────────────────────────────────────────────────────────────────
-
 if [[ "${1:-}" == "version" || "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
   echo "canton devrel v${VERSION}"
   exit 0
 fi
 
-# ─── Route subcommands ────────────────────────────────────────────────────────
-
 SUBCOMMAND="${1:-}"
 DEVREL_COMMAND="${2:-}"
-
 if [[ "$SUBCOMMAND" != "devrel" ]]; then
   echo ""
   echo "  Unknown command: ${SUBCOMMAND}"

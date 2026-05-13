@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-# canton devrel status — health check + port reference
-set -euo pipefail
 
+set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-
-print_header "Canton DevRel — Network Status"
-
+print_header "Canton DevRel Tool Network Status"
 check_http() {
   local label="$1"
   local url="$2"
@@ -23,7 +20,6 @@ echo -e "  ${BOLD}Validators${NC}"
 check_http "Super Validator"         "http://localhost:4903/api/validator/readyz" "(port 4903)"
 check_http "App Provider Validator"  "http://localhost:3903/api/validator/readyz" "(port 3903)"
 check_http "App User Validator"      "http://localhost:2903/api/validator/readyz" "(port 2903)"
-
 echo ""
 echo -e "  ${BOLD}JSON Ledger API${NC}"
 check_http "App Provider JSON API"   "http://localhost:3975/readyz" "(http://localhost:3975)"
