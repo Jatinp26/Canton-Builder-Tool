@@ -79,8 +79,8 @@ upload_dar() {
     -H "Content-Type: application/octet-stream" \
     --data-binary "@${DAR_PATH}")
 
-  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-  BODY=$(echo "$RESPONSE" | head -n-1)
+  HTTP_CODE=$(echo "$RESPONSE" | awk 'END{print}')
+  BODY=$(echo "$RESPONSE" | awk 'NR>1{print prev} {prev=$0}')
 
   case "$HTTP_CODE" in
     200|204)
