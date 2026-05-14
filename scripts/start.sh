@@ -3,7 +3,7 @@
 set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-print_header "Canton DevRel Tool Starting LocalNet"
+print_header "Canton builder Tool Starting LocalNet"
 
 if ! docker info &>/dev/null; then
   print_error "Docker is not running. Start Docker Desktop and try again."
@@ -43,12 +43,12 @@ if [ ${#MISSING_HOSTS[@]} -gt 0 ]; then
     echo "127.0.0.1  wallet.localhost scan.localhost sv.localhost" | sudo tee -a /etc/hosts > /dev/null
     print_ok "Added to /etc/hosts."
     if grep -qi "microsoft" /proc/version 2>/dev/null; then
-      print_warning "WSL detected: /etc/hosts may reset on reboot. If domains stop resolving, re-run canton devrel start."
+      print_warning "WSL detected: /etc/hosts may reset on reboot. If domains stop resolving, re run canton builder start."
     fi
   fi
 fi
 
-BUNDLE_EXTRACT_DIR="${BUNDLE_DIR:-$HOME/.canton-devrel/bundle}"
+BUNDLE_EXTRACT_DIR="${BUNDLE_DIR:-$HOME/.canton-builder/bundle}"
 LOCALNET_COMPOSE="$BUNDLE_EXTRACT_DIR/splice-node/docker-compose/localnet/compose.yaml"
 if [ ! -f "$LOCALNET_COMPOSE" ]; then
   print_step "Downloading Splice LocalNet bundle v${IMAGE_TAG}..."
@@ -81,7 +81,7 @@ if [ ! -f "$LOCALNET_COMPOSE" ]; then
     echo "  Then place the file at:"
     echo "    $TARBALL_PATH"
     echo ""
-    echo "  And re-run: canton devrel start"
+    echo "  And re-run: canton builder start"
     exit 1
   fi
   print_step "Extracting bundle..."
@@ -132,8 +132,8 @@ echo ""
 if [ $FAILED -eq 1 ]; then
   print_error "One or more validators failed to start."
   echo ""
-  echo "  Check logs: canton devrel logs"
-  echo "  Reset: canton devrel reset && canton devrel start"
+  echo "  Check logs: canton builder logs"
+  echo "  Reset: canton builder reset && canton builder start"
   exit 1
 fi
 
@@ -149,7 +149,7 @@ echo "  JSON Ledger API:"
 echo "    App Provider →  http://localhost:3975"
 echo "    App User     →  http://localhost:2975"
 echo ""
-echo "  Deploy your DAR:  canton devrel deploy ./your-project.dar"
-echo "  Check status:     canton devrel status"
-echo "  Stop:             canton devrel stop"
+echo "  Deploy your DAR:  canton builder deploy ./your-project.dar"
+echo "  Check status:     canton builder status"
+echo "  Stop:             canton builder stop"
 echo ""

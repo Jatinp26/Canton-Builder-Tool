@@ -5,10 +5,10 @@ source "$DEVREL_DIR/scripts/lib/common.sh"
 
 if [ $# -lt 1 ]; then
   echo ""
-  print_error "Usage: canton devrel deploy <path/to/your-project.dar>"
+  print_error "Usage: canton builder deploy <path/to/your-project.dar>"
   echo ""
   echo "  Example:"
-  echo "    canton devrel deploy ./my-app/.daml/dist/my-app-0.0.1.dar"
+  echo "    canton builder deploy ./my-app/.daml/dist/my-app-0.0.1.dar"
   echo ""
   exit 1
 fi
@@ -20,7 +20,7 @@ fi
 
 DAR_FILENAME=$(basename "$DAR_PATH")
 DAR_SIZE=$(du -sh "$DAR_PATH" | cut -f1)
-print_header "Canton DevRel — Deploying DAR"
+print_header "Deploying DAR"
 echo "  File: $DAR_FILENAME ($DAR_SIZE)"
 echo ""
 
@@ -28,7 +28,7 @@ print_step "Checking validators are reachable..."
 for port in 3903 2903; do
   if ! curl -fs "http://localhost:${port}/api/validator/readyz" &>/dev/null; then
     print_error "Validator on port $port is not responding."
-    echo "  Is LocalNet running? Try: canton devrel start"
+    echo "  Is LocalNet running? Try: canton builder start"
     exit 1
   fi
 done

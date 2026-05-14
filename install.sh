@@ -2,7 +2,7 @@
 
 set -euo pipefail
 REPO="Jatinp26/Canton-DevRel-Tool"
-INSTALL_DIR="$HOME/.canton-devrel"
+INSTALL_DIR="$HOME/.canton-builder"
 BIN_DIR="$HOME/.local/bin"
 VERSION="0.1.0"
 BOLD='\033[1m'
@@ -13,9 +13,9 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 print_banner() {
   echo ""
-  echo -e "${CYAN}${BOLD}┌──────────────────────────────────────────┐${NC}"
-  echo -e "${CYAN}${BOLD}│ Canton DevRel Tool Installer v${VERSION} │${NC}"
-  echo -e "${CYAN}${BOLD}└──────────────────────────────────────────┘${NC}"
+  echo -e "${CYAN}${BOLD}┌───────────────────────────────────────────┐${NC}"
+  echo -e "${CYAN}${BOLD}│ Canton Builder Tool Installer v${VERSION} │${NC}"
+  echo -e "${CYAN}${BOLD}└───────────────────────────────────────────┘${NC}"
   echo ""
 }
 ok()   { echo -e "${GREEN}✓${NC}  $*"; }
@@ -29,7 +29,7 @@ case "$OS" in
   Linux)  ok "Linux detected" ;;
   *)
     err "Unsupported OS: $OS"
-    echo "  canton devrel supports macOS and Linux only."
+    echo "  canton builder supports macOS and Linux only."
     echo "  Windows: use WSL 2."
     exit 1
     ;;
@@ -90,7 +90,7 @@ else
   ok "Docker memory: ~${DOCKER_MEMORY_GB}GB"
 fi
 echo ""
-step "Installing canton devrel to $INSTALL_DIR..."
+step "Installing canton builder tool to $INSTALL_DIR..."
 echo ""
 
 if [ -d "$INSTALL_DIR" ]; then
@@ -135,7 +135,7 @@ add_to_shell_rc() {
   if [ -f "$rc_file" ]; then
     if ! grep -q '.local/bin' "$rc_file" 2>/dev/null; then
       echo "" >> "$rc_file"
-      echo "# canton devrel" >> "$rc_file"
+      echo "# canton builder" >> "$rc_file"
       echo "$PATH_LINE" >> "$rc_file"
       echo "$CANTON_ENV_LINE" >> "$rc_file"
       ok "Added to $rc_file"
@@ -197,12 +197,12 @@ fi
 
 echo ""
 echo -e "${GREEN}${BOLD}┌─────────────────────────────────────────┐${NC}"
-echo -e "${GREEN}${BOLD}│     Canton DevRel Tool Installed!       │${NC}"
+echo -e "${GREEN}${BOLD}│     Canton Builder Tool Installed!      │${NC}"
 echo -e "${GREEN}${BOLD}└─────────────────────────────────────────┘${NC}"
 echo ""
 echo "  Reload your shell, then run:"
 echo ""
-echo -e "    ${BOLD}canton devrel start${NC}"
+echo -e "    ${BOLD}canton builder start${NC}"
 echo ""
 echo "  Or reload now:"
 case "$SHELL_NAME" in
@@ -211,5 +211,5 @@ case "$SHELL_NAME" in
   *)    echo "    (reload your shell)" ;;
 esac
 echo ""
-echo "  Full command reference: canton devrel --help"
+echo "  Full command reference: canton builder --help"
 echo ""

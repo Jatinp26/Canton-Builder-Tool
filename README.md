@@ -1,17 +1,15 @@
-# Canton DevRel Tool
+# Canton Builder Tool
 
 **One command. Full Canton Network on your laptop.**
 
-Built by Canton Foundation Developer Relations for hackathons, bootcamps, and anyone who needs a local Canton Network without waiting for DevNet whitelisting.
-
-That's it. Three validators, a synchronizer, wallet UIs, Canton Coin, Scan UI, the whole official Splice LocalNet stack.
+Built for hackathons, bootcamps, and anyone who needs a local Canton Network without waiting for DevNet whitelisting. Three validators, a synchronizer, wallet UIs, Canton Coin, Scan UI, the whole official Splice LocalNet stack.
 
 ## Install
 
 **macOS / Linux** (WSL 2 on Windows):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Jatinp26/canton-devrel-tool/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Jatinp26/canton-builder-tool/main/install.sh | bash
 ```
 
 Then reload your shell:
@@ -30,19 +28,19 @@ The installer handles PATH setup and `/etc/hosts` entries for `*.localhost` doma
 ## Commands
 
 ```bash
-canton devrel start                        # download bundle + boot LocalNet
+canton builder start                        # download bundle + boot LocalNet
 
-canton devrel stop                         # stop containers (data preserved)
+canton builder stop                         # stop containers (data preserved)
 
-canton devrel status                       # health check + port reference
+canton builder status                       # health check + port reference
 
-canton devrel deploy ./my-app-0.0.1.dar    # upload your DAR to both participants
+canton builder deploy ./my-app-0.0.1.dar    # upload your DAR to both participants
 
-canton devrel logs                         # tail all logs
+canton builder logs                         # tail all logs
 
-canton devrel logs <service>               # tail one service
+canton builder logs <service>               # tail one service
 
-canton devrel reset                        # wipe everything, start clean
+canton builder reset                        # wipe everything, start clean
 ```
 
 ## What Starts
@@ -63,9 +61,9 @@ canton devrel reset                        # wipe everything, start clean
 
 ## First Run
 
-On `canton devrel start`, the tool:
+On `canton builder start`, the tool:
 
-1. Downloads the official Splice LocalNet bundle from the Splice GitHub release (One-time only cached at `~/.canton-devrel/bundle/`)
+1. Downloads the official Splice LocalNet bundle from the Splice GitHub release (One-time only cached at `~/.canton-builder/bundle/`)
 2. Pulls the Canton/Splice Docker images (~5 min, also cached)
 3. Boots the full network using the official LocalNet compose configuration
 
@@ -76,7 +74,7 @@ Subsequent runs skip steps 1 and 2 entirely and boot in ~30 seconds.
 Build your Daml project with `dpm build`, then:
 
 ```bash
-canton devrel deploy ./your-project/.daml/dist/your-project-0.0.1.dar
+canton builder deploy ./your-project/.daml/dist/your-project-0.0.1.dar
 ```
 
 Uploads your DAR to both the App Provider and App User participants, retrieves your package ID, and prints the template ID format for API calls.
@@ -108,28 +106,28 @@ echo "127.0.0.1  wallet.localhost scan.localhost sv.localhost" | sudo tee -a /et
 **Weird state / things not working**
 
 ```bash
-canton devrel reset
-canton devrel start
+canton builder reset
+canton builder start
 ```
 
 **See what's failing**
 
 ```bash
-canton devrel logs
-canton devrel logs canton     
-canton devrel logs splice     
+canton builder logs
+canton builder logs canton     
+canton builder logs splice     
 ```
 
 **Re-download the bundle** (if corrupted or upgrading)
 
 ```bash
-rm -rf ~/.canton-devrel/bundle
-canton devrel start
+rm -rf ~/.canton-builder/bundle
+canton builder start
 ```
 
 ## Upgrading LocalNet version
 
-Edit `~/.canton-devrel/.env` and change `IMAGE_TAG`:
+Edit `~/.canton-builder/.env` and change `IMAGE_TAG`:
 
 ```bash
 IMAGE_TAG=0.5.11 
@@ -137,9 +135,9 @@ IMAGE_TAG=0.5.11
 
 Then reset and restart:
 ```bash
-canton devrel reset
-rm -rf ~/.canton-devrel/bundle  
-canton devrel start
+canton builder reset
+rm -rf ~/.canton-builder/bundle  
+canton builder start
 ```
 
 # Part of the Canton Developer Hub

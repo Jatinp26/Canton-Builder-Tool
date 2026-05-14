@@ -19,13 +19,13 @@ print_ok()      { echo -e "${GREEN}✓  $1${NC}"; }
 print_warning() { echo -e "${YELLOW}⚠  $1${NC}"; }
 print_error()   { echo -e "${RED}✗  $1${NC}"; }
 
-DEVREL_DIR="${DEVREL_DIR:-$HOME/.canton-devrel}"
+DEVREL_DIR="${DEVREL_DIR:-$HOME/.canton-builder}"
 
 if [ -f "$DEVREL_DIR/.env" ]; then
   set -a; source "$DEVREL_DIR/.env"; set +a
 fi
 
-BUNDLE_DIR="${BUNDLE_DIR:-$HOME/.canton-devrel/bundle}"
+BUNDLE_DIR="${BUNDLE_DIR:-$HOME/.canton-builder/bundle}"
 LOCALNET_DIR="$BUNDLE_DIR/splice-node/docker-compose/localnet"
 COMPOSE_CMD=(
   docker compose

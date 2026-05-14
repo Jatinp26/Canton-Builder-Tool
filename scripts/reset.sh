@@ -3,7 +3,7 @@
 set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-print_header "Canton DevRel — Full Reset"
+print_header "Canton builder Full Reset"
 print_warning "This will DELETE all LocalNet data:"
 echo "  • All ledger state (contracts, transactions)"
 echo "  • All party registrations"
@@ -30,5 +30,5 @@ docker compose \
 
 echo ""
 print_ok "Reset complete. All data wiped."
-echo "  Start fresh: canton devrel start"
+echo "  Start fresh: canton builder start"
 echo ""

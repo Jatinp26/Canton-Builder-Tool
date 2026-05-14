@@ -4,7 +4,7 @@ set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
 
-print_header "Canton DevRel Tool Stopping LocalNet"
+print_header "Canton builder Tool Stopping LocalNet"
 print_step "Stopping containers (data volumes preserved)..."
 
 docker compose \
@@ -17,6 +17,6 @@ docker compose \
 
 echo ""
 print_ok "LocalNet stopped. Data volumes preserved."
-echo "  Resume: canton devrel start"
-echo "  Full wipe: canton devrel reset"
+echo "  Resume: canton builder start"
+echo "  Full wipe: canton builder reset"
 echo ""

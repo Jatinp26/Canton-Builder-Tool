@@ -3,7 +3,7 @@
 set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-print_header "Canton DevRel Tool Network Status"
+print_header "Canton Builder Tool Network Status"
 check_http() {
   local label="$1"
   local url="$2"

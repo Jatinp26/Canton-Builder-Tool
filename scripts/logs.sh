@@ -10,7 +10,7 @@ if [ -n "$SERVICE" ]; then
   "${COMPOSE_CMD[@]}" logs -f --tail=50 "$SERVICE"
 else
   print_step "Tailing all logs (Ctrl+C to stop)"
-  echo "  Tip: filter to one service,  canton devrel logs <service>"
+  echo "  Tip: filter to one service,  canton builder logs <service>"
   echo "  Common services: canton, splice, postgres, nginx"
   echo ""
   "${COMPOSE_CMD[@]}" logs -f --tail=30
