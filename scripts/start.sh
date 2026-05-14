@@ -3,7 +3,7 @@
 set -euo pipefail
 DEVREL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$DEVREL_DIR/scripts/lib/common.sh"
-print_header "Canton builder Tool Starting LocalNet"
+print_header "Canton Builder Tool Starting LocalNet"
 
 if ! docker info &>/dev/null; then
   print_error "Docker is not running. Start Docker Desktop and try again."
