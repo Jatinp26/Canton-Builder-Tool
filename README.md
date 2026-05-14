@@ -9,7 +9,7 @@ Built for hackathons, bootcamps, and anyone who needs a local Canton Network wit
 **macOS / Linux** (WSL 2 on Windows):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Jatinp26/canton-builder-tool/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Jatinp26/Canton-Builder-Tool/main/install.sh | bash
 ```
 
 Then reload your shell:
